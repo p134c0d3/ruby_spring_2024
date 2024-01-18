@@ -1,10 +1,13 @@
 require_relative 'scraper.rb'
 require_relative 'country.rb'
 require_relative 'state.rb'
+require_relative 'user.rb'
 
 class CLI
   # run
   def run
+    User.load_users_from_file
+    authenticate
     Scraper.scrape_data
     greeting
     while menu != 'exit'
@@ -72,5 +75,53 @@ class CLI
         puts "#{i + 1}. #{state.name} - #{state.overall_deaths}"
       end
     end
+  end
+
+  def authenticate
+    authenticated = false
+
+    until authenticated
+      puts "Please login or Signup"
+      puts "Which do you choose? (signup/login)"
+      get_input = gets.chomp.downcase
+      if get_input == 'login'
+        # authenticate user
+        authenticated = login
+      elsif get_input == 'signup'
+        # create account process
+        create_account
+      else
+        puts "Please enter a valid option"
+      end
+    end
+  end
+
+  def login
+    puts "Please enter your username"
+    username = gets.chomp
+    puts "Please enter your password"
+    password = gets.chomp
+
+    # call authenitcate from User class
+    result = User.authenticate(username, password)
+
+    if result
+      puts "Welcome back #{result.username}"
+      return true
+    else
+      puts "Invalid username or password"
+    end
+  end
+
+  def create_account
+    # get user info
+    puts "Please enter your username"
+    username = gets.chomp
+    puts "Please enter your password"
+    password = gets.chomp
+
+    user = User.new(username, password)
+    User.store_credentials(user)
+    puts "Account created successfully"
   end
 end
